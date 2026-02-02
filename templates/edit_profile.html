@@ -15,8 +15,11 @@
                     {{ form.hidden_tag() }}
 
                     <div class="mb-4 text-center">
-                        <img src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}" 
-                             class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" id="profilePreview">
+                        <img src="{{ url_for('static', filename='uploads/' + (current_user.profile_image or 'default_profile.jpg')) }}" 
+                             class="rounded-circle" 
+                             style="width: 120px; height: 120px; object-fit: cover;" 
+                             id="profilePreview"
+                             onerror="this.src='{{ url_for(\"static\", filename=\"uploads/default_profile.jpg\") }}'">
                     </div>
 
                     <div class="mb-3">
