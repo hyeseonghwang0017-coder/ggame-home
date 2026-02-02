@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
-# 데이터베이스 디렉토리 생성
+set -o errexit
+
+# 1. 패키지 설치
+pip install -r requirements.txt
+
+# 2. 데이터베이스 디렉토리 생성
 mkdir -p instance
 
-# 데이터베이스 초기화 및 관리자 계정 생성
+# 3. 데이터베이스 초기화 및 관리자 계정 생성
 python -c "
 from app import app, db
 from models import User
