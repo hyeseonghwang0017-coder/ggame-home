@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}가입 승인 대기 중 - 공겜SNS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-warning">
+            <div class="card-body p-5 text-center">
+                <i class="bi bi-hourglass-split text-warning" style="font-size: 4rem;"></i>
+                <h2 class="card-title mt-3">승인 대기 중입니다</h2>
+                <p class="text-muted fs-5">
+                    회원가입이 완료되었습니다!<br>
+                    관리자의 승인 후 팀 커뮤니티를 이용할 수 있습니다.
+                </p>
+                <p class="text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    일반적으로 24시간 이내에 승인됩니다.
+                </p>
+                <div class="mt-4">
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+                        <i class="bi bi-box-arrow-right"></i> 로그아웃
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

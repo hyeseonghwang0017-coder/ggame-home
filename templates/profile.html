@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.display_name }}님의 프로필 - 공겜SNS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3">
+        <!-- 프로필 카드 -->
+        <div class="card shadow-sm mb-4 sticky-top" style="top: 80px;">
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}" 
+                     class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                <h5 class="card-title">{{ user.display_name }}</h5>
+                <p class="text-muted">@{{ user.username }}</p>
+                
+                {% if user.bio %}
+                    <p class="card-text small">{{ user.bio }}</p>
+                {% endif %}
+                
+                <p class="text-muted small">
+                    <i class="bi bi-calendar-event"></i>
+                    {{ user.created_at.strftime('%Y년 %m월 가입') }}
+                </p>
+
+                {% if user.id == current_user.id %}
+                    <a href="{{ url_for('edit_profile') }}" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-pencil-square"></i> 프로필 편집
+                    </a>
+                {% endif %}
+
+                <div class="mt-3">
+                    <div class="row">
+                        <div class="col">
+                            <strong>{{ user.posts|length }}</strong>
+                            <small class="d-block text-muted">게시물</small>
+                        </div>
+                        <div class="col">
+                            <strong>{{ user.comments|length }}</strong>
+                            <small class="d-block text-muted">댓글</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-9">
+        <!-- 게시물 목록 -->
+        <h4 class="mb-4">{{ user.display_name }}님의 게시물</h4>
+
+        {% if posts.items %}
+            {% for post in posts.items %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if post.category == '공지' %}
+                                <span class="badge bg-danger">📢 공지</span>
+                            {% elif post.category == '일상' %}
+                                <span class="badge bg-success">☀️ 일상</span>
+                            {% elif post.category == '게임' %}
+                                <span class="badge bg-info">🎮 게임</span>
+                            {% elif post.category == '영화' %}
+                                <span class="badge bg-warning text-dark">🎬 영화</span>
+                            {% endif %}
+                            <small class="text-muted ms-2">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        {% if post.user_id == current_user.id or current_user.is_admin %}
+                            <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말 삭제하시겠습니까?');">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-body">
+                        <p class="card-text">{{ post.content }}</p>
+                        {% if post.image_filename %}
+                            <img src="{{ url_for('static', filename='uploads/' + post.image_filename) }}" 
+                                 class="img-fluid rounded mb-3" style="max-height: 400px; width: 100%; object-fit: cover;">
+                        {% endif %}
+                    </div>
+
+                    <div class="card-footer bg-light">
+                        <div class="row text-center">
+                            <div class="col">
+                                <button class="btn btn-sm btn-light like-btn" data-post-id="{{ post.id }}" data-url="{{ url_for('like_post', post_id=post.id) }}">
+                                    <i class="bi {% if current_user in post.liked_by %}bi-hand-thumbs-up-fill text-primary{% else %}bi-hand-thumbs-up{% endif %}"></i>
+                                    <span class="likes-count">{{ post.get_likes_count() }}</span>
+                                </button>
+                            </div>
+                            <div class="col">
+                                <a href="{{ url_for('view_post', post_id=post.id) }}" class="btn btn-sm btn-light">
+                                    <i class="bi bi-chat-left"></i>
+                                    <span>{{ post.comments|length }}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- 페이지네이션 -->
+            {% if posts.pages > 1 %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if posts.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('view_profile', user_id=user.id, page=posts.prev_num) }}">이전</a>
+                            </li>
+                        {% endif %}
+
+                        {% for page_num in posts.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num == posts.page %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('view_profile', user_id=user.id, page=page_num) }}">{{ page_num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if posts.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('view_profile', user_id=user.id, page=posts.next_num) }}">다음</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 게시물이 없습니다.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const url = this.dataset.url;
+            
+            try {
+                const response = await fetch(url, { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const icon = this.querySelector('i');
+                    const count = this.querySelector('.likes-count');
+                    
+                    if (data.liked) {
+                        icon.className = 'bi bi-hand-thumbs-up-fill text-primary';
+                    } else {
+                        icon.className = 'bi bi-hand-thumbs-up';
+                    }
+                    
+                    count.textContent = data.likes_count;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+</script>
+{% endblock %}

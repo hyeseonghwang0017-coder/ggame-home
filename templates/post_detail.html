@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.author.display_name }}님의 게시물 - 공겜SNS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- 게시물 -->
+        <div class="card shadow-sm mb-4">
+            <!-- 게시물 헤더 -->
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="{{ url_for('static', filename='uploads/' + post.author.profile_image) }}" 
+                         class="rounded-circle me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                    <div>
+                        <h6 class="mb-0">
+                            <a href="{{ url_for('view_profile', user_id=post.author.id) }}" class="text-decoration-none">
+                                {{ post.author.display_name }}
+                            </a>
+                            {% if post.category == '공지' %}
+                                <span class="badge bg-danger">📢 공지</span>
+                            {% elif post.category == '일상' %}
+                                <span class="badge bg-success">☀️ 일상</span>
+                            {% elif post.category == '게임' %}
+                                <span class="badge bg-info">🎮 게임</span>
+                            {% elif post.category == '영화' %}
+                                <span class="badge bg-warning text-dark">🎬 영화</span>
+                            {% endif %}
+                        </h6>
+                        <small class="text-muted">{{ post.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                    </div>
+                </div>
+                {% if post.user_id == current_user.id or current_user.is_admin %}
+                    <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말 삭제하시겠습니까?');">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <!-- 게시물 본문 -->
+            <div class="card-body">
+                <p class="card-text" style="font-size: 1.1rem; line-height: 1.6;">{{ post.content }}</p>
+                {% if post.image_filename %}
+                    <img src="{{ url_for('static', filename='uploads/' + post.image_filename) }}" 
+                         class="img-fluid rounded mb-3" style="max-height: 600px; width: 100%; object-fit: cover;">
+                {% endif %}
+            </div>
+
+            <!-- 상호작용 정보 -->
+            <div class="card-footer bg-light">
+                <div class="row text-center">
+                    <div class="col">
+                        <button class="btn btn-sm btn-light like-btn" data-post-id="{{ post.id }}" data-url="{{ url_for('like_post', post_id=post.id) }}">
+                            <i class="bi {% if current_user in post.liked_by %}bi-hand-thumbs-up-fill text-primary{% else %}bi-hand-thumbs-up{% endif %}"></i>
+                            <span class="likes-count">{{ post.get_likes_count() }}</span> 좋아요
+                        </button>
+                    </div>
+                    <div class="col">
+                        <span class="text-muted">
+                            <i class="bi bi-chat-left"></i> {{ post.comments|length }} 댓글
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 댓글 작성 폼 -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="card-title mb-3">댓글 작성</h6>
+                <form method="POST" action="{{ url_for('add_comment', post_id=post.id) }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {% if form.content.errors %}
+                            {{ form.content(class="form-control is-invalid") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.content.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.content(class="form-control") }}
+                        {% endif %}
+                    </div>
+
+                    {{ form.submit(class="btn btn-primary btn-sm") }}
+                </form>
+            </div>
+        </div>
+
+        <!-- 댓글 목록 -->
+        {% if post.comments %}
+            {% for comment in post.comments | sort(attribute='created_at', reverse=true) %}
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <img src="{{ url_for('static', filename='uploads/' + comment.author.profile_image) }}" 
+                                     class="rounded-circle me-2" style="width: 35px; height: 35px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0">
+                                        <a href="{{ url_for('view_profile', user_id=comment.author.id) }}" class="text-decoration-none">
+                                            {{ comment.author.display_name }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </div>
+                            </div>
+                            {% if comment.user_id == current_user.id or current_user.is_admin %}
+                                <form method="POST" action="{{ url_for('delete_comment', comment_id=comment.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말 삭제하시겠습니까?');">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+
+                        <p class="card-text mb-2">{{ comment.content }}</p>
+
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-light like-comment-btn" data-comment-id="{{ comment.id }}" data-url="{{ url_for('like_comment', comment_id=comment.id) }}">
+                                <i class="bi {% if current_user in comment.liked_by %}bi-hand-thumbs-up-fill text-primary{% else %}bi-hand-thumbs-up{% endif %}"></i>
+                                <span class="likes-count">{{ comment.get_likes_count() }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-chat-dots"></i> 아직 댓글이 없습니다. 첫 번째 댓글을 남겨보세요!
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // 게시물 좋아요
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const url = this.dataset.url;
+            
+            try {
+                const response = await fetch(url, { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const icon = this.querySelector('i');
+                    const count = this.querySelector('.likes-count');
+                    
+                    if (data.liked) {
+                        icon.className = 'bi bi-hand-thumbs-up-fill text-primary';
+                    } else {
+                        icon.className = 'bi bi-hand-thumbs-up';
+                    }
+                    
+                    count.textContent = data.likes_count;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+
+    // 댓글 좋아요
+    document.querySelectorAll('.like-comment-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const url = this.dataset.url;
+            
+            try {
+                const response = await fetch(url, { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const icon = this.querySelector('i');
+                    const count = this.querySelector('.likes-count');
+                    
+                    if (data.liked) {
+                        icon.className = 'bi bi-hand-thumbs-up-fill text-primary';
+                    } else {
+                        icon.className = 'bi bi-hand-thumbs-up';
+                    }
+                    
+                    count.textContent = data.likes_count;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+</script>
+{% endblock %}

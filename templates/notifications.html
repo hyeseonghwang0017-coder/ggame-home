@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}알림 - 공겜SNS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h2 class="mb-4">
+            <i class="bi bi-bell-fill"></i> 알림
+        </h2>
+
+        {% if notifications %}
+            {% for notification in notifications %}
+                <div class="card shadow-sm mb-3 {% if not notification.is_read %}border-primary{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            {% if notification.related_user %}
+                                <img src="{{ url_for('static', filename='uploads/' + notification.related_user.profile_image) }}" 
+                                     class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background-color: #e9ecef;">
+                                    <i class="bi bi-info-circle text-muted"></i>
+                                </div>
+                            {% endif %}
+
+                            <div class="flex-grow-1">
+                                <p class="mb-1">
+                                    {% if notification.type == 'comment' %}
+                                        <strong>{{ notification.related_user.display_name }}</strong>님이 당신의 게시물에 댓글을 남겼습니다
+                                    {% elif notification.type == 'like' %}
+                                        <strong>{{ notification.related_user.display_name }}</strong>님이 당신의 게시물을 좋아합니다
+                                    {% elif notification.type == 'approval' %}
+                                        <i class="bi bi-check-circle text-success"></i> 관리자님이 당신의 가입을 승인했습니다!
+                                    {% endif %}
+                                </p>
+                                <small class="text-muted">
+                                    {{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </small>
+                            </div>
+
+                            {% if notification.related_post_id and notification.type != 'approval' %}
+                                <a href="{{ url_for('view_post', post_id=notification.related_post_id) }}" class="btn btn-sm btn-outline-primary">
+                                    보기
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 알림이 없습니다.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

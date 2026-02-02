@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}회원가입 - 공겜SNS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-5">
+                <h2 class="card-title text-center mb-4">
+                    <i class="bi bi-people-fill text-primary"></i> 회원가입
+                </h2>
+                
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label") }}
+                        {% if form.username.errors %}
+                            {{ form.username(class="form-control is-invalid") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.username.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.username(class="form-control", placeholder="사용자명 (3-20자)") }}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {% if form.email.errors %}
+                            {{ form.email(class="form-control is-invalid", type="email") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.email.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.email(class="form-control", placeholder="이메일", type="email") }}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.display_name.label(class="form-label") }}
+                        {% if form.display_name.errors %}
+                            {{ form.display_name(class="form-control is-invalid") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.display_name.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.display_name(class="form-control", placeholder="표시할 이름") }}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {% if form.password.errors %}
+                            {{ form.password(class="form-control is-invalid", type="password") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.password.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.password(class="form-control", placeholder="비밀번호 (최소 6자)", type="password") }}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.confirm_password.label(class="form-label") }}
+                        {% if form.confirm_password.errors %}
+                            {{ form.confirm_password(class="form-control is-invalid", type="password") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.confirm_password.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.confirm_password(class="form-control", placeholder="비밀번호 확인", type="password") }}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.submit(class="btn btn-primary w-100") }}
+                    </div>
+                </form>
+
+                <p class="text-center mb-0">
+                    이미 계정이 있으신가요? <a href="{{ url_for('login') }}">로그인</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
