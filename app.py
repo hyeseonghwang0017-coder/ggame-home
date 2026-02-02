@@ -14,6 +14,15 @@ from forms import SignUpForm, LoginForm, UpdateProfileForm, PostForm, CommentFor
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# 업로드 폴더 생성
+os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
+
+# 기본 프로필 이미지 생성
+try:
+    from create_default_image import *
+except ImportError:
+    pass
+
 db.init_app(app)
 
 login_manager = LoginManager()
@@ -70,7 +79,6 @@ def save_image(file, prefix='post'):
 with app.app_context():
     db.create_all()
     
-    # 첫 번째 실행 시 관리자 계정 생성
     admin = User.query.filter_by(username='admin').first()
     if not admin:
         admin = User(

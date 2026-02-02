@@ -5,10 +5,13 @@ set -o errexit
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# 2. 데이터베이스 디렉토리 생성
-mkdir -p instance
+# 2. 데이터베이스 디렉토리 및 업로드 폴더 생성
+mkdir -p instance static/uploads
 
-# 3. 데이터베이스 초기화 및 관리자 계정 생성
+# 3. 기본 이미지 생성
+python create_default_image.py
+
+# 4. 데이터베이스 초기화 (기존 데이터 보존)
 python -c "
 from app import app, db
 from models import User
