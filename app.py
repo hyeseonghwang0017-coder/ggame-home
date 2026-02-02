@@ -360,9 +360,15 @@ def edit_profile():
         current_user.display_name = form.display_name.data
         current_user.bio = form.bio.data
         
+        # 새로운 이미지가 업로드된 경우에만 업데이트
         if form.profile_image.data:
             image_filename = save_image(form.profile_image.data, 'profile')
             if image_filename:
+                # 기존 이미지 삭제 (default_profile.jpg 제외)
+                if current_user.profile_image and current_user.profile_image != 'default_profile.jpg':
+                    old_image_path = os.path.join(Config.UPLOAD_FOLDER, current_user.profile_image)
+                    if os.path.exists(old_image_path):
+                        os.remove(old_image_path)
                 current_user.profile_image = image_filename
         
         db.session.commit()

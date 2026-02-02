@@ -8,8 +8,10 @@
         <!-- 프로필 카드 -->
         <div class="card shadow-sm mb-4 sticky-top" style="top: 80px;">
             <div class="card-body text-center">
-                <img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}" 
-                     class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                <img src="{{ url_for('static', filename='uploads/' + (user.profile_image or 'default_profile.jpg')) }}" 
+                     class="rounded-circle mb-3" 
+                     style="width: 100px; height: 100px; object-fit: cover;"
+                     onerror="this.src='{{ url_for(\"static\", filename=\"uploads/default_profile.jpg\") }}'">
                 <h5 class="card-title">{{ user.display_name }}</h5>
                 <p class="text-muted">@{{ user.username }}</p>
                 
