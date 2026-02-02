@@ -6,7 +6,9 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
     # 데이터베이스 설정
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///team_sns.db'
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(basedir, 'instance', 'team_sns.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # 파일 업로드 설정
