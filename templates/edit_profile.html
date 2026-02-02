@@ -18,8 +18,7 @@
                         <img src="{{ url_for('static', filename='uploads/' + (current_user.profile_image or 'default_profile.jpg')) }}" 
                              class="rounded-circle" 
                              style="width: 120px; height: 120px; object-fit: cover;" 
-                             id="profilePreview"
-                             onerror="this.src='{{ url_for(\"static\", filename=\"uploads/default_profile.jpg\") }}'">
+                             id="profilePreview">
                     </div>
 
                     <div class="mb-3">
@@ -82,6 +81,16 @@
 </div>
 
 <script>
+    const profilePreview = document.getElementById('profilePreview');
+    const defaultProfileUrl = '{{ url_for("static", filename="uploads/default_profile.jpg") }}';
+    
+    // 프로필 이미지 오류 처리
+    if (profilePreview) {
+        profilePreview.addEventListener('error', function() {
+            this.src = defaultProfileUrl;
+        });
+    }
+
     // 프로필 사진 미리보기
     document.getElementById('profileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];

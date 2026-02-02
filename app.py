@@ -361,52 +361,72 @@ def like_comment(comment_id):
     })
 
 # ===== 프로필 관련 라우트 =====
-@app.route('/profile/<int:user_id>')
-@login_required
-@approved_required
-def view_profile(user_id):
-    try:
-        user = User.query.get_or_404(user_id)
-        page = request.args.get('page', 1, type=int)
-        posts = Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc()).paginate(page=page, per_page=10)
-        
-        return render_template('profile.html', user=user, posts=posts)
-    except Exception as e:
-        print(f"Profile Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        flash('프로필을 불러올 수 없습니다.', 'danger')
-        return redirect(url_for('feed'))
-
 @app.route('/profile/edit', methods=['GET', 'POST'])
 @login_required
+@approved_required
 def edit_profile():
     form = UpdateProfileForm()
     
     if form.validate_on_submit():
-        current_user.display_name = form.display_name.data
-        current_user.bio = form.bio.data
-        
-        # 새로운 이미지가 업로드된 경우에만 업데이트
-        if form.profile_image.data:
-            image_filename = save_image(form.profile_image.data, 'profile')
-            if image_filename:
-                # 기존 이미지 삭제 (default_profile.jpg 제외)
-                if current_user.profile_image and current_user.profile_image != 'default_profile.jpg':
-                    old_image_path = os.path.join(Config.UPLOAD_FOLDER, current_user.profile_image)
-                    if os.path.exists(old_image_path):
-                        os.remove(old_image_path)
-                current_user.profile_image = image_filename
-        
-        db.session.commit()
-        flash('프로필이 업데이트되었습니다', 'success')
-        return redirect(url_for('view_profile', user_id=current_user.id))
+        try:
+            current_user.display_name = form.display_name.data
+            current_user.bio = form.bio.data
+            
+            # 새로운 이미지가 업로드된 경우에만 업데이트
+            if form.profile_image.data:
+                image_filename = save_image(form.profile_image.data, 'profile')
+                if image_filename:
+                    # 기존 이미지 삭제 (default_profile.jpg 제외)
+                    if current_user.profile_image and current_user.profile_image != 'default_profile.jpg':
+                        old_image_path = os.path.join(Config.UPLOAD_FOLDER, current_user.profile_image)
+                        if os.path.exists(old_image_path):
+                            os.remove(old_image_path)
+                    current_user.profile_image = image_filename
+            
+            db.session.commit()
+            flash('프로필이 업데이트되었습니다', 'success')
+            return redirect(url_for('view_profile', user_id=current_user.id))
+        except Exception as e:
+            db.session.rollback()
+            print(f"Edit Profile Error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            flash('프로필 업데이트 중 오류가 발생했습니다', 'danger')
     
     elif request.method == 'GET':
         form.display_name.data = current_user.display_name
         form.bio.data = current_user.bio
     
     return render_template('edit_profile.html', form=form)
+
+@app.route('/profile/<int:user_id>')
+@login_required
+@approved_required
+def view_profile(user_id):
+    try:
+        # 사용자 조회
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            flash('존재하지 않는 사용자입니다.', 'danger')
+            return redirect(url_for('feed'))
+        
+        page = request.args.get('page', 1, type=int)
+        
+        # 게시물 조회
+        posts_query = Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc())
+        posts = posts_query.paginate(page=page, per_page=10)
+        
+        # 게시물과 댓글 수 계산
+        posts_count = posts_query.count()
+        comments_count = Comment.query.filter_by(user_id=user_id).count()
+        
+        return render_template('profile.html', user=user, posts=posts, posts_count=posts_count, comments_count=comments_count)
+    except Exception as e:
+        print(f"Profile Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash('프로필을 불러올 수 없습니다.', 'danger')
+        return redirect(url_for('feed'))
 
 # ===== 알림 관련 라우트 =====
 @app.route('/notifications')

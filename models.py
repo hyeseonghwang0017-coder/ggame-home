@@ -31,9 +31,9 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # 관계 설정
-    posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
-    comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
+    # 관계 설정 - delete-orphan 제거하여 게시물/댓글 자동 삭제 방지
+    posts = db.relationship('Post', backref='author', lazy=True, foreign_keys='Post.user_id')
+    comments = db.relationship('Comment', backref='author', lazy=True, foreign_keys='Comment.user_id')
     liked_posts = db.relationship('Post', secondary=post_likes, backref='liked_by')
     liked_comments = db.relationship('Comment', secondary=comment_likes, backref='liked_by')
     
