@@ -34,6 +34,18 @@ login_manager.login_message = '로그인이 필요합니다'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# 오류 핸들러
+@app.errorhandler(500)
+def internal_error(error):
+    print(f"500 Error: {error}")
+    import traceback
+    traceback.print_exc()
+    return render_template('500.html'), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -353,11 +365,18 @@ def like_comment(comment_id):
 @login_required
 @approved_required
 def view_profile(user_id):
-    user = User.query.get_or_404(user_id)
-    page = request.args.get('page', 1, type=int)
-    posts = Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc()).paginate(page=page, per_page=10)
-    
-    return render_template('profile.html', user=user, posts=posts)
+    try:
+        user = User.query.get_or_404(user_id)
+        page = request.args.get('page', 1, type=int)
+        posts = Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc()).paginate(page=page, per_page=10)
+        
+        return render_template('profile.html', user=user, posts=posts)
+    except Exception as e:
+        print(f"Profile Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash('프로필을 불러올 수 없습니다.', 'danger')
+        return redirect(url_for('feed'))
 
 @app.route('/profile/edit', methods=['GET', 'POST'])
 @login_required
