@@ -347,12 +347,7 @@ def like_comment(comment_id):
 def view_profile(user_id):
     user = User.query.get_or_404(user_id)
     page = request.args.get('page', 1, type=int)
-    posts = user.posts if user.is_approved or user.is_admin or user_id == current_user.id else []
-    
-    if isinstance(posts, list):
-        posts = Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc()).paginate(page=page, per_page=10)
-    else:
-        posts = posts.order_by(Post.created_at.desc()).paginate(page=page, per_page=10)
+    posts = Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc()).paginate(page=page, per_page=10)
     
     return render_template('profile.html', user=user, posts=posts)
 
@@ -384,10 +379,9 @@ def edit_profile():
 @app.route('/notifications')
 @login_required
 def notifications():
-    page = request.args.get('page', 1, type=int)
-    notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    notifications_list = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
     
-    return render_template('notifications.html', notifications=notifications[:20])
+    return render_template('notifications.html', notifications=notifications_list[:20])
 
 @app.route('/notification/<int:notification_id>/read', methods=['POST'])
 @login_required
@@ -462,6 +456,4 @@ def reject_user(user_id):
     return jsonify({'success': True})
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True, host='127.0.0.1', port=5000)
