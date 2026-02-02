@@ -53,7 +53,7 @@
                 <div class="row text-center">
                     <div class="col">
                         <button class="btn btn-sm btn-light like-btn" data-post-id="{{ post.id }}" data-url="{{ url_for('like_post', post_id=post.id) }}">
-                            <i class="bi {% if current_user in post.liked_by %}bi-hand-thumbs-up-fill text-primary{% else %}bi-hand-thumbs-up{% endif %}"></i>
+                            <i class="bi {% if current_user.has_liked_post(post) %}bi-hand-thumbs-up-fill text-primary{% else %}bi-hand-thumbs-up{% endif %}"></i>
                             <span class="likes-count">{{ post.get_likes_count() }}</span> 좋아요
                         </button>
                     </div>
@@ -122,7 +122,7 @@
 
                         <div class="d-flex align-items-center">
                             <button class="btn btn-sm btn-light like-comment-btn" data-comment-id="{{ comment.id }}" data-url="{{ url_for('like_comment', comment_id=comment.id) }}">
-                                <i class="bi {% if current_user in comment.liked_by %}bi-hand-thumbs-up-fill text-primary{% else %}bi-hand-thumbs-up{% endif %}"></i>
+                                <i class="bi {% if current_user.has_liked_comment(comment) %}bi-hand-thumbs-up-fill text-primary{% else %}bi-hand-thumbs-up{% endif %}"></i>
                                 <span class="likes-count">{{ comment.get_likes_count() }}</span>
                             </button>
                         </div>
