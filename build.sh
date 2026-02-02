@@ -2,6 +2,7 @@
 set -o errexit
 
 # 1. 패키지 설치
+pip install --upgrade pip
 pip install -r requirements.txt
 
 # 2. 데이터베이스 디렉토리 생성
